@@ -1,0 +1,191 @@
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { LoginInput, useSignin } from '../api/login';
+import { router } from 'expo-router';
+import { TextInput } from 'react-native-paper';
+export default function LoginForm() {
+  const login = useSignin();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+  const onSubmit = (values: LoginInput) => {
+    // console.log(values);
+    login.mutate(
+      { data: values },
+      {
+        onSuccess(response) {
+          // console.log(response);
+          router.replace({
+            pathname: '/verify',
+            params: {
+              userId: response.userId,
+            },
+          });
+        },
+      },
+    );
+  };
+  return (
+    <View style={styles.mainContainer}>
+      <Text style={styles.loginText}>Login</Text>
+      <Text style={styles.infoText}>
+        Please enter the 6 digit one time code to activate your account!
+      </Text>
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            mode="outlined"
+            label="Email"
+            placeholder="Enter your email"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            style={styles.input}
+            placeholderTextColor={'#6E717C'}
+            textColor="#6E717C"
+            activeOutlineColor="#6E717C"
+            outlineStyle={{
+              borderWidth: 1,
+              borderRadius: 30,
+              borderColor: '#6E717C4F',
+            }}
+          />
+        )}
+        name="email"
+      />
+      <View style={styles.error}>
+        {errors.email && <Text style={styles.error}>This is required.</Text>}
+      </View>
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            mode="outlined"
+            label="Password"
+            placeholder="Enter your password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            style={styles.input}
+            placeholderTextColor={'#6E717C'}
+            textColor="#6E717C"
+            activeOutlineColor="#6E717C"
+            outlineStyle={{
+              borderWidth: 1,
+              borderRadius: 30,
+              borderColor: '#6E717C4F',
+            }}
+          />
+        )}
+        name="password"
+      />
+      <View style={styles.error}>
+        {errors.password && <Text style={styles.error}>This is required.</Text>}
+      </View>
+      <View style={styles.buttonContainer}>
+        <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
+          {login.isPending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.text}>Proceed</Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  input: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginBottom: 30,
+    marginHorizontal: 20,
+    paddingInlineStart: 20,
+    // borderWidth: 1,
+    borderColor: '#6E717C4F',
+    backgroundColor: '#F9FAFC',
+    borderRadius: 30,
+    height: 40,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 80,
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#FF0083',
+    borderRadius: 30,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00000040',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  text: {
+    fontFamily: 'Poppins',
+    fontSize: 18,
+    color: '#FFF2F2',
+    fontWeight: 'bold',
+    lineHeight: 21,
+    letterSpacing: 2,
+  },
+  error: {
+    paddingHorizontal: 20,
+    color: 'red',
+    marginTop: -10,
+  },
+  loginText: {
+    fontFamily: 'Poppins',
+    fontWeight: '700',
+    fontSize: 29,
+    // lineHeight:22,
+    letterSpacing: 0.06,
+    color: '#000000',
+    textAlign: 'center',
+    marginTop: 100,
+    marginBottom: 29,
+  },
+  infoText: {
+    fontFamily: 'Poppins',
+    fontWeight: '300',
+    fontSize: 15,
+    lineHeight: 22,
+    letterSpacing: 0.06,
+    color: '#000000',
+    textAlign: 'center',
+    marginLeft: 41,
+    marginRight: 35,
+    marginBottom: 44,
+  },
+});
