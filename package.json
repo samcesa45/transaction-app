@@ -23,6 +23,7 @@
     "dom-to-image": "^2.6.0",
     "dotenv": "^17.2.3",
     "expo": "~54.0.13",
+    "expo-blur": "^15.0.7",
     "expo-clipboard": "^8.0.7",
     "expo-constants": "~18.0.9",
     "expo-env": "^1.1.1",
