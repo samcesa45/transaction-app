@@ -56,14 +56,17 @@ function RootNavigator() {
   useTokenRefreshMonitor();
   return (
     <Stack
-      // screenOptions={{
-      //   headerShown: false,
-      // }}
+    // screenOptions={{
+    //   headerShown: false,
+    // }}
     >
-      <Stack.Screen name="index"  options={{
-        headerShown:true,
-        headerTitle:'hi'
-      }}/>
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: true,
+          headerTitle: 'hi',
+        }}
+      />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>

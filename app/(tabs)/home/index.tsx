@@ -1,22 +1,26 @@
-import { View, Text, StyleSheet, Pressable, Modal,Animated } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Modal,
+  Animated,
+} from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useUser } from '@/features/auth/api/get-user';
 import { router, useNavigation } from 'expo-router';
 import { useAuthStore } from '@/store/use-auth-store';
-import {
-  MaterialCommunityIcons,
-  EvilIcons,
-} from '@expo/vector-icons';
+import { MaterialCommunityIcons, EvilIcons } from '@expo/vector-icons';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Card, Portal, Snackbar } from 'react-native-paper';
+import {  Portal, Snackbar } from 'react-native-paper';
 import { CardComponent } from '@/components/ui/cards';
 import * as Clipboard from 'expo-clipboard';
-import { BlurView } from 'expo-blur';
 import AccountBalanceDisplay from '@/components/account-balance-display';
 import QuickActions from '@/components/quick-actions';
 import Shortcuts from '@/components/shortcuts';
 import TransactionHistory from '@/components/transaction-history';
 import Licensed from '@/components/licensed';
+import { cardAcctItems } from '@/constant';
 
 const HEADER_HEIGHT = 100;
 
@@ -27,55 +31,53 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selected, setSelected] = useState('0125148189');
   const [selectedAccountType, setSelectedAccountType] = useState('Savings');
-  const [toggleBalance,setToggleBalance] = useState(false)
+  const [toggleBalance, setToggleBalance] = useState(false);
   const user = userQuery?.data;
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
-
-  const scrollY = useRef(new Animated.Value(0)).current
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const headerBackgroundColor = scrollY.interpolate({
-    inputRange:[0,HEADER_HEIGHT],
-    outputRange: ['#e5e5e5','rgba(255,255,255,1)'],
-    extrapolate:'clamp'
-  })
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: ['#e5e5e5', 'rgba(255,255,255,1)'],
+    extrapolate: 'clamp',
+  });
 
   const headerElevation = scrollY.interpolate({
-    inputRange:[0,HEADER_HEIGHT],
-    outputRange:[0,4],
-    extrapolate:'clamp'
-  })
-  
-  useLayoutEffect(()=>{
-     navigation.setOptions({
-      headerTitle:'',
-      headerTransparent:true,
-      headerBackground:()=>(
-        <Animated.View 
-        style={[
-          styles.animatedHeader,
-          {
-            backgroundColor:headerBackgroundColor,
-            elevation:headerElevation,
-          }
-        ]}
-       />
-          
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: [0, 4],
+    extrapolate: 'clamp',
+  });
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: '',
+      headerTransparent: true,
+      headerBackground: () => (
+        <Animated.View
+          style={[
+            styles.animatedHeader,
+            {
+              backgroundColor: headerBackgroundColor,
+              elevation: headerElevation,
+            },
+          ]}
+        />
       ),
-      headerLeft:()=>(
+      headerLeft: () => (
         <View style={styles.greetContainer}>
-        <View style={styles.profileIconContainer}>
-          <Pressable onPress={() => router.push('/home/profile')}>
-            <AntDesign name="user" size={24} color="black" />
-          </Pressable>
+          <View style={styles.profileIconContainer}>
+            <Pressable onPress={() => router.push('/home/profile')}>
+              <AntDesign name="user" size={24} color="black" />
+            </Pressable>
+          </View>
+          <Text style={styles.welcomeText}>
+            Hello, {user ? user?.firstName : 'Guest'}!
+          </Text>
         </View>
-        <Text style={styles.welcomeText}>
-          Hello, {user ? user?.firstName : 'Guest'}!
-        </Text>
-      </View>
-      )
-     })
-  },[navigation,user,headerBackgroundColor,headerElevation])
+      ),
+    });
+  }, [navigation, user, headerBackgroundColor, headerElevation]);
 
   if (!isAuthenticated) {
     router.replace('/login');
@@ -90,151 +92,145 @@ export default function Index() {
     );
   }
 
-  const handleSelectedAccountNumber = (accountnumber:string,accountType:string) => {
-   setSelected(accountnumber)
-   setSelectedAccountType(accountType)
-   setModalVisible(false)
+  const handleSelectedAccountNumber = (
+    accountnumber: string,
+    accountType: string,
+  ) => {
+    setSelected(accountnumber);
+    setSelectedAccountType(accountType);
+    setModalVisible(false);
   };
 
-  const handleCopyAccount = async() => {
-    await Clipboard.setStringAsync(selected)
-    setSnackbarVisible(true)
-  }
+  const handleCopyAccount = async () => {
+    await Clipboard.setStringAsync(selected);
+    setSnackbarVisible(true);
+  };
 
   const handleBalanceToggle = () => {
-    setToggleBalance(!toggleBalance)
-  }
+    setToggleBalance(!toggleBalance);
+  };
   return (
     <View style={styles.container}>
       <Animated.ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={styles.scrollContent}
-      scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{nativeEvent: {contentOffset: {y:scrollY}}}],
-        {useNativeDriver:false}
-      )}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false },
+        )}
       >
-      <View style={styles.accountContainer}>
-        <View>
-          <Pressable
-            style={styles.selectAccount}
-            onPress={() => setModalVisible(!modalVisible)}
-          >
-            <Text>{selectedAccountType}</Text>
-            <EvilIcons name="chevron-down" size={24} color="black" />
-          </Pressable>
-        </View>
-        <View>
-          <Pressable
-            style={styles.accountCopy}
-            onPress={handleCopyAccount}
-          >
-            <Text>{selected}</Text>
-            <MaterialCommunityIcons name="content-copy" size={20} color="red" />
-          </Pressable>
-        </View>
-        <Portal>
-          <Snackbar
-            style={styles.snackbar}
-            wrapperStyle={{ top: 35 }}
-            visible={snackbarVisible}
-            onDismiss={() => setSnackbarVisible(false)}
-          >
-            Account number copied
-          </Snackbar>
-        </Portal>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContent}>
-            <View style={styles.bankAccountContainer}>
-              <Text style={styles.accountText}>Accounts</Text>
-              {cardAcctItems.map((item, index) => (
-                <CardComponent
-                  key={item.id}
-                  onPress={() => handleSelectedAccountNumber(item.title,item.subtitle)}
-                  mode="outlined"
-                  title={item.title}
-                  subtitle={item.subtitle}
-                  leftIcon={item.leftIcon}
-                  rightIcon={item.rightIcon}
-                  isActive={selected === item.title}
-                />
-              ))}
-            </View>
+        <View style={styles.accountContainer}>
+          <View>
+            <Pressable
+              style={styles.selectAccount}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text>{selectedAccountType}</Text>
+              <EvilIcons name="chevron-down" size={24} color="black" />
+            </Pressable>
           </View>
-          <Pressable onPress={() => setModalVisible(false)}>
-            <View style={styles.modalOverlay} />
-          </Pressable>
-        </Modal>
-      </View>
-      <View style={styles.contentArea}>
-        <View style={styles.accountBalanceContainer}>
-          <AccountBalanceDisplay balance={0.00} showBalance={toggleBalance}/>
-          <MaterialCommunityIcons name={toggleBalance ? "eye-outline" : "eye-off-outline"} size={24} color="black"  onPress={handleBalanceToggle}/>
+          <View>
+            <Pressable style={styles.accountCopy} onPress={handleCopyAccount}>
+              <Text>{selected}</Text>
+              <MaterialCommunityIcons
+                name="content-copy"
+                size={20}
+                color="red"
+              />
+            </Pressable>
+          </View>
+          <Portal>
+            <Snackbar
+              style={styles.snackbar}
+              wrapperStyle={{ top: 35 }}
+              visible={snackbarVisible}
+              onDismiss={() => setSnackbarVisible(false)}
+            >
+              Account number copied
+            </Snackbar>
+          </Portal>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onDismiss={() => setModalVisible(false)}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.bankAccountContainer}>
+                <Text style={styles.accountText}>Accounts</Text>
+                {cardAcctItems.map((item) => (
+                  <CardComponent
+                    key={item.id}
+                    onPress={() =>
+                      handleSelectedAccountNumber(item.title, item.subtitle)
+                    }
+                    mode="outlined"
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    leftIcon={item.leftIcon}
+                    rightIcon={item.rightIcon}
+                    isActive={selected === item.title}
+                  />
+                ))}
+              </View>
+            </View>
+            <Pressable onPress={() => setModalVisible(false)}>
+              <View style={styles.modalOverlay} />
+            </Pressable>
+          </Modal>
         </View>
-        <View style={styles.bookBalanceContainer}>
-          <Text style={styles.bookBalanceText}>Book balance</Text>
-          <AccountBalanceDisplay balance={0.00} showBalance={toggleBalance}/>
-        </View>
-        <View>
-         <QuickActions/>
-        </View>
+        <View style={styles.contentArea}>
+          <View style={styles.accountBalanceContainer}>
+            <AccountBalanceDisplay balance={0.0} showBalance={toggleBalance} />
+            <MaterialCommunityIcons
+              name={toggleBalance ? 'eye-outline' : 'eye-off-outline'}
+              size={24}
+              color="black"
+              onPress={handleBalanceToggle}
+            />
+          </View>
+          <View style={styles.bookBalanceContainer}>
+            <Text style={styles.bookBalanceText}>Book balance</Text>
+            <AccountBalanceDisplay balance={0.0} showBalance={toggleBalance} />
+          </View>
+          <View>
+            <QuickActions />
+          </View>
           <Text style={styles.sectionTitle}>Shortcuts</Text>
           <Shortcuts />
         </View>
-        <TransactionHistory/>
-        <Licensed/>
+        <TransactionHistory />
+        <Licensed />
       </Animated.ScrollView>
     </View>
   );
 }
 
-const cardAcctItems = [
-  {
-    id: 1,
-    title: '0125148189',
-    subtitle: 'Savings',
-    leftIcon: 'currency-ngn',
-    rightIcon: 'dots-horizontal',
-  },
-  {
-    id: 2,
-    title: '0305392166',
-    subtitle: 'Savings',
-    leftIcon: 'currency-ngn',
-    rightIcon: 'dots-horizontal',
-  },
-];
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop:100,
+    paddingTop: 100,
     paddingHorizontal: 10,
-    backgroundColor:"rgba(225,225,225,0.1)"
+    backgroundColor: 'rgba(225,225,225,0.1)',
   },
-  animatedHeader:{
-    position:'absolute',
-    top:0,
-    left:0,
-    right:0,
-    height:'100%',
-    shadowColor:'#000',
-    shadowOffset:{width:0,height:2},
-    shadowOpacity:1,
-    shadowRadius:3,
+  animatedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
   },
-  scrollView:{
-    flex:1
+  scrollView: {
+    flex: 1,
   },
-  scrollContent:{
-    paddingHorizontal:10,
-    paddingBottom:20,
+  scrollContent: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
   },
   profileIconContainer: {
     flexDirection: 'row',
@@ -251,7 +247,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
-    paddingBottom:10
+    paddingBottom: 10,
   },
   welcomeText: {
     fontWeight: '500',
@@ -343,7 +339,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 0,
     borderRadius: 10,
-    flex:1,
+    flex: 1,
   },
   sectionTitle: {
     fontFamily: 'Poppins',
@@ -351,24 +347,24 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginBottom: 15,
   },
-  accountBalanceContainer:{
-   flexDirection:'row',
-   alignItems:'center',
-   gap:20
+  accountBalanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
   },
-  accountBalanceText:{
-   fontFamily:'Poppins',
-   fontWeight:'700',
-   fontSize:23
+  accountBalanceText: {
+    fontFamily: 'Poppins',
+    fontWeight: '700',
+    fontSize: 23,
   },
-  bookBalanceContainer:{
-    flexDirection:'row',
-    alignItems:'center',
-    gap:20
+  bookBalanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
   },
-  bookBalanceText:{
-   fontWeight:400,
-   fontSize:20,
-   color:"rgba(0,0,0,0.5)"
+  bookBalanceText: {
+    fontWeight: 400,
+    fontSize: 20,
+    color: 'rgba(0,0,0,0.5)',
   },
 });

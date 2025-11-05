@@ -41,7 +41,6 @@ export default function AccountBalanceDisplay({
           {decimal && <Text style={styles.decimalText}>.{decimal}</Text>}
         </>
       ) : (
-        // <Text style={styles.hiddenText}>...</Text>
         <MaterialCommunityIcons
           name="dots-horizontal"
           size={36}

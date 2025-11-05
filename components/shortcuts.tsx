@@ -1,4 +1,12 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { shortcutItems } from '@/constant';
+import {
+  Image,
+  ImageSourcePropType,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 export default function Shortcuts() {
   return (
@@ -6,7 +14,7 @@ export default function Shortcuts() {
       {shortcutItems.map((item) => (
         <Pressable key={item.id}>
           <View style={styles.imgContainer}>
-            <Image source={item.img} />
+            <Image source={item.img as ImageSourcePropType} />
           </View>
           <Text style={styles.text}>{item.text}</Text>
         </Pressable>
@@ -34,23 +42,3 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
 });
-const shortcutItems = [
-  {
-    id: 1,
-    text: 'Near me',
-    img: '',
-    href: '/near-me',
-  },
-  {
-    id: 2,
-    text: 'Buy airtime',
-    href: '/buy-data',
-    img: '',
-  },
-  {
-    id: 3,
-    text: 'Buy data',
-    href: '/buy-data',
-    img: '',
-  },
-];
