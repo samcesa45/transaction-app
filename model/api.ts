@@ -11,7 +11,12 @@ export type LoginResponse = {
   message: string;
   userId: string;
 };
+export type RegisterResponse = {
+  message: string;
+  userId: string;
+};
 export type VerifyResponse = {
+  message?:string;
   accessToken: string;
   refreshToken: string;
 };

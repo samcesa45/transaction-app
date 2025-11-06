@@ -12,7 +12,7 @@ import { router, useNavigation } from 'expo-router';
 import { useAuthStore } from '@/store/use-auth-store';
 import { MaterialCommunityIcons, EvilIcons } from '@expo/vector-icons';
 import { useLayoutEffect, useRef, useState } from 'react';
-import {  Portal, Snackbar } from 'react-native-paper';
+import { Portal, Snackbar } from 'react-native-paper';
 import { CardComponent } from '@/components/ui/cards';
 import * as Clipboard from 'expo-clipboard';
 import AccountBalanceDisplay from '@/components/account-balance-display';

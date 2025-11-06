@@ -12,6 +12,7 @@
     "prettier": "npx prettier --write"
   },
   "dependencies": {
+    "@backpackapp-io/react-native-toast": "^0.15.1",
     "@expo/vector-icons": "^15.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@react-navigation/bottom-tabs": "^7.4.0",

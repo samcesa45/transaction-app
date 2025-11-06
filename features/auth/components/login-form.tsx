@@ -4,18 +4,23 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
+  Button,
 } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
-import { LoginInput, useSignin } from '../api/login';
+import { LoginInput, loginInputSchema, useSignin } from '../api/login';
 import { router } from 'expo-router';
 import { TextInput } from 'react-native-paper';
+import useAppToast from '@/hooks/useAppToast';
+import { zodResolver } from '@hookform/resolvers/zod';
 export default function LoginForm() {
   const login = useSignin();
+  const {success,error:errorToast} = useAppToast()
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginInputSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -27,7 +32,7 @@ export default function LoginForm() {
       { data: values },
       {
         onSuccess(response) {
-          // console.log(response);
+          success('Login successful')
           router.replace({
             pathname: '/verify',
             params: {
@@ -35,9 +40,15 @@ export default function LoginForm() {
             },
           });
         },
+        onError(error) {
+          const errorMessage = error instanceof Error
+          ? error.message :'Login failed. Please try again.'
+          errorToast(errorMessage)
+        },
       },
     );
   };
+
   return (
     <View style={styles.mainContainer}>
       <Text style={styles.loginText}>Login</Text>
@@ -71,7 +82,7 @@ export default function LoginForm() {
         name="email"
       />
       <View style={styles.error}>
-        {errors.email && <Text style={styles.error}>This is required.</Text>}
+        {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
       </View>
       <Controller
         control={control}
@@ -101,14 +112,18 @@ export default function LoginForm() {
         name="password"
       />
       <View style={styles.error}>
-        {errors.password && <Text style={styles.error}>This is required.</Text>}
+        {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+      </View>
+      <View style={styles.accountContainer}>
+        <Text style={styles.accountText}>Don't have an account?</Text>
+        <Button color={'#FF0083'} title='signup' onPress={() => router.push('/register')}/>
       </View>
       <View style={styles.buttonContainer}>
         <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
           {login.isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.text}>Proceed</Text>
+            <Text style={styles.text}>Login</Text>
           )}
         </Pressable>
       </View>
@@ -188,4 +203,19 @@ const styles = StyleSheet.create({
     marginRight: 35,
     marginBottom: 44,
   },
+  accountContainer:{
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    gap:8
+  },
+  accountText:{
+    fontFamily: 'Poppins',
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 21,
+  },
+  accountButton:{
+    color: '#FF0083',
+  }
 });

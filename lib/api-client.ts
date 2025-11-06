@@ -50,6 +50,20 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
     const status = error?.response?.status;
+    const isAuthEndPoint = originalRequest?.url?.includes('/auth/login') ||
+    originalRequest?.url?.includes('/auth/register') ||
+    originalRequest?.url?.includes('/auth/verify-2fa') ||
+    originalRequest?.url?.includes('/auth/refresh');
+
+    if (isAuthEndPoint)
+     {
+      const errorMessage =
+        (error.response?.data as any)?.message ||
+        error.response?.statusText ||
+        error.message ||
+        'Something went wrong';
+      return Promise.reject(new Error(String(errorMessage)));
+    }
 
     // Only handle 401 errors and prevent infinite loops
     if (status === 401 && originalRequest && !originalRequest._retry) {
@@ -131,7 +145,12 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-
-    return Promise.reject(error);
+    // Handle other errors (404, 500, etc.)
+    const errorMessage = 
+      (error.response?.data as any)?.message || 
+      error.response?.statusText ||
+      error.message || 
+      'Something went wrong';
+    return Promise.reject(new Error(errorMessage));
   },
 );

@@ -7,13 +7,15 @@ import {
   Pressable,
   Button,
 } from 'react-native';
-import { VerifyRequestInput, useVerifyRequest } from '../api/verify';
+import { VerifyRequestInput, useVerifyRequest, verifyResetInputSchema } from '../api/verify';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/store/use-auth-store';
 import * as Clipboard from 'expo-clipboard';
 import { ResendOtpInput, useResendOtp } from '../api/resend-otp';
 import { ActivityIndicator } from 'react-native-paper';
+import useAppToast from '@/hooks/useAppToast';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export default function VerifyForm() {
   const { setToken, setRefreshTkn, setIsAuthenticated } = useAuthStore();
@@ -22,12 +24,14 @@ export default function VerifyForm() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const resendOtp = useResendOtp();
+  const {success,error:errorToast} = useAppToast()
 
   const {
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm<VerifyRequestInput>({
+    resolver: zodResolver(verifyResetInputSchema),
     defaultValues: {
       userId: '',
       otp: '',
@@ -53,7 +57,7 @@ export default function VerifyForm() {
     })();
   }, []);
 
-  //    Auto-submit when OTP is complete
+  //Auto-submit when OTP is complete
   useEffect(() => {
     const otpString = otp.join('');
     if (otpString.length === 6) {
@@ -66,6 +70,7 @@ export default function VerifyForm() {
       { data: values },
       {
         onSuccess(response) {
+          success(response?.message || 'Verification successful')
           setToken(response.accessToken);
           setRefreshTkn(response.refreshToken);
           setIsAuthenticated(true);
@@ -75,7 +80,9 @@ export default function VerifyForm() {
           //Reset OTP on error
           setOtp(['', '', '', '', '', '']);
           inputRefs.current[0]?.focus();
-          console.error('verification failed:', error);
+          const errorMessage = error instanceof Error
+          ? error.message :'verification failed: Please try again.'
+          errorToast(errorMessage)
         },
       },
     );
@@ -86,10 +93,12 @@ export default function VerifyForm() {
       { data: values },
       {
         onSuccess(response) {
-          // console.log(response);
+          success(response.data.message || 'Otp Resent successfully!')
         },
         onError(error) {
-          console.error(error.message);
+          const errorMessage = error instanceof Error 
+          ? error.message : 'Otp failed. Please try again.'
+          errorToast(errorMessage);
         },
       },
     );

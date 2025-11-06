@@ -19,9 +19,6 @@ export const useRefetchToken = ({
     onSuccess: (...args) => {
       onSuccess?.(...args);
     },
-    onError: (error) => {
-      console.error('Mutation error:', error);
-    },
     ...restConfig,
   });
 };
